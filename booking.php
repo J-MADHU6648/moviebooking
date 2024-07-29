@@ -207,7 +207,11 @@ if(!isset($_SESSION['user']))
     var seats = document.getElementById("selected_seats").value;
     var amount = $('#hm').val();
     var movie = '<?php echo $movie["movie_name"]; ?>'; // Assuming $movie is defined
-    window.location.href = "book_seat.php?seats="+seats+"&amount="+amount+"&movie="+encodeURIComponent(movie);
+	var theatre = '<?php echo $theatre['name']; ?>';
+	var screen = '<?php echo $screen['screen_name']; ?>';
+	var bookingdate ='<?php echo $date; ?>'; 
+	var showtime = '<?php echo date('h:i A',strtotime($ttme['start_time']))." ".$ttme['name'];?> Show';
+    window.location.href = "book_seat.php?seats="+seats+"&amount="+amount+"&movie="+encodeURIComponent(movie)+"&theatre="+encodeURIComponent(theatre)+"&screen="+encodeURIComponent(screen)+"&bookingdate="+bookingdate+"&showtime="+showtime;
 }
 
 </script>

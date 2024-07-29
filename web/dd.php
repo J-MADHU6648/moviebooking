@@ -1,94 +1,231 @@
 <?php
 session_start();
 
-// Retrieve GET parameters
-$movie = isset($_GET['movie']) ? $_GET['movie'] : null;
-$seats = isset($_GET['seats']) ? $_GET['seats'] : null;
-$amount = isset($_GET['amount']) ? $_GET['amount'] : null;
-$theatre = isset($_GET['theatre']) ? $_GET['theatre'] : null;
-$screen = isset($_GET['screen']) ? $_GET['screen'] : null;
-$bookingdate = isset($_GET['bookingdate']) ? $_GET['bookingdate'] : null;
-$showtime = isset($_GET['showtime']) ? $_GET['showtime'] : null;
+// Check if 'movie_name' and 'seats' are set in the GET request
+if (isset($_GET['movie'])) {
+    $movie = $_GET['movie'];
+} else {
+    $movie = null;
+}
 
-// Database connection
+if (isset($_GET['seats'])) {
+    $seats = $_GET['seats'];
+} else {
+    $seats = null;
+}
+
+if (isset($_GET['amount'])) {
+    $amount = $_GET['amount'];
+} else {
+    $amount = null;
+}
+
+// Assuming you have a database connection, replace these placeholders with your actual database connection details
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "movietheatredb";
 
+// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
+// Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch booked seats
-$sql = "SELECT * FROM orders WHERE bookingdate='$bookingdate' AND movie='$movie' AND showtime='$showtime'";
-$result = $conn->query($sql);
 
-$bookedSeats = [];
-if ($result->num_rows > 0) {
-    while($row = $result->fetch_assoc()) {
-        $listseats = explode(',', $row['seats']);
-        $bookedSeats = array_merge($bookedSeats, $listseats);
-    }
-} else {
-    echo "0 results";
-}
-
-$conn->close();
-
-echo "<script>";
-echo "var bookedSeats = " . json_encode($bookedSeats) . ";";
-echo "</script>";
-// echo json_encode($bookedSeats);
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <style>
         @import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
-        * { box-sizing: border-box; }
-        body { background-color: #eabdbd; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Lato', sans-serif; margin: 0; overflow-y: scroll; }
-        .movie-container { margin: 20px 0; }
-        .movie-container select { background-color: #fff; border: 0; border-radius: 5px; font-size: 14px; margin-left: 10px; padding: 5px 15px; appearance: none; }
-        .container { perspective: 1000px; margin-bottom: 30px; }
-        .seat { background-color: #444451; height: 20px; width: 20px; margin: 3px; border-top-left-radius: 0px; border-top-right-radius: 0px; }
-        .seat.selected { background-color: #6feaf6; }
-        .seat.occupied { background-color: #fff; }
-        .seat:nth-of-type(2) { margin-right: 18px; }
-        .seat:nth-last-of-type(2) { margin-left: 18px; }
-        .seat:not(.occupied):hover { cursor: pointer; transform: scale(1.2); }
-        .showcase .seat:not(.occupied):hover { cursor: default; transform: scale(1); }
-        .showcase { background: rgba(0, 0, 0, 0.1); padding: 5px 10px; border-radius: 5px; color: #777; list-style-type: none; display: flex; justify-content: space-between; }
-        .showcase li { display: flex; align-items: center; justify-content: center; margin: 0 10px; }
-        .showcase li small { margin-left: 2px; }
-        .row { display: flex; }
-        .screen { background-color: #fff; height: 70px; width: 100%; margin: 15px 0; transform: rotateX(-45deg); box-shadow: 0 3px 10px rgba(255, 255, 255, 0.7); }
-        p.text { margin: 5px 0; }
-        p.text span { color: #6feaf6; }
-        .label-seat-space { margin-right: 10px; }
-        .row.Club, .row.balcony, .row.Executive { justify-content: center; text-align: center; }
-        .container .row.Club, .container .row.balcony, .container .row.Executive { margin-bottom: 10px; }
-        .container .row.Club .label-seat-space, .container .row.balcony .label-seat-space, .container .row.Executive .label-seat-space { display: none; }
-        .row.Executive .seat.selected { background-color: #6feaf6; }
-    </style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #eabdbd;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Lato', sans-serif;
+  margin: 0;
+  overflow-y: scroll;
+}
+
+.movie-container {
+  margin: 20px 0;
+}
+
+.movie-container select {
+  background-color: #fff;
+  border: 0;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-left: 10px;
+  padding: 5px 15px 5px 15px;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.container {
+  perspective: 1000px;
+  margin-bottom: 30px;
+}
+
+.seat {
+    background-color: #444451;
+    height: 20px;
+    width: 20px;
+    margin: 3px;
+    border-top-left-radius: 0px;
+    border-top-right-radius: 0px;
+}
+
+.seat.selected {
+  background-color: #6feaf6;
+}
+
+.seat.occupied {
+  background-color: #fff;
+}
+
+.seat:nth-of-type(2) {
+  margin-right: 18px;
+}
+
+.seat:nth-last-of-type(2) {
+  margin-left: 18px;
+}
+
+.seat:not(.occupied):hover {
+  cursor: pointer;
+  transform: scale(1.2);
+}
+
+.showcase .seat:not(.occupied):hover {
+  cursor: default;
+  transform: scale(1);
+}
+
+.showcase {
+  background: rgba(0, 0, 0, 0.1);
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: #777;
+  list-style-type: none;
+  display: flex;
+  justify-content: space-between;
+}
+
+.showcase li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 10px;
+}
+
+.showcase li small {
+  margin-left: 2px;
+}
+
+.row {
+  display: flex;
+}
+
+.screen {
+  background-color: #fff;
+  height: 70px;
+  width: 100%;
+  margin: 15px 0;
+  transform: rotateX(-45deg);
+  box-shadow: 0 3px 10px rgba(255, 255, 255, 0.7);
+}
+
+p.text {
+  margin: 5px 0;
+}
+
+p.text span {
+  color: #6feaf6;
+}
+
+.label-seat-space {
+    margin-right: 10px; /* Adjust the margin as needed */
+  }
+
+.row.Club {
+  justify-content: center; /* Center-align seats within the container */
+  text-align: center; /* Center-align row label */
+}
+
+.container .row.Club {
+  margin-bottom: 10px; /* Adjust the margin as needed for spacing */
+}
+
+.container .row.Club .label-seat-space {
+  display: none; /* Hide the space between alphabet label and seats */
+}
+
+.row.balcony {
+  justify-content: center; /* Center-align seats within the container */
+  text-align: center; /* Center-align row label */
+}
+
+.container .row.balcony {
+  margin-bottom: 10px; /* Adjust the margin as needed for spacing */
+}
+
+.container .row.balcony .label-seat-space {
+  display: none; /* Hide the space between alphabet label and seats */
+}
+
+.row.Executive {
+  justify-content: center; /* Center-align seats within the container */
+  text-align: center; /* Center-align row label */
+}
+
+.container .row.Executive {
+  margin-bottom: 10px; /* Adjust the margin as needed for spacing */
+}
+
+.container .row.Executive .label-seat-space {
+  display: none; /* Hide the space between alphabet label and seats */
+}
+
+.row.Executive .seat.selected {
+  background-color: #6feaf6; /* Change to the desired green color */
+}
+
+
+        </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
     <link rel="stylesheet" href="css/seatLayout.css" />
     <title>Movie Seat Booking</title>
-</head>
-<body>
-<p>Selected Movie: <?php echo $movie; ?>&nbsp;&nbsp;&nbsp;&nbsp;Selected Seats: <?php echo $seats; ?>&nbsp;&nbsp;&nbsp;&nbsp;Amount: <?php echo $amount; ?></p>
-<div class="movie-container" id="book-seats"></div>
-<textarea class="inputBox" style="display:none;">
+  </head>
+ 
+  
+  </body>
+  <p>Selected Movie: <?php echo $movie; ?>&nbsp;&nbsp;&nbsp;&nbsp;
+  Selected Seats: <?php echo $seats; ?>&nbsp;&nbsp;&nbsp;&nbsp;
+  Amount: <?php echo $amount; ?></p>
+    <div class="movie-container" id="book-seats">
+
+
+      
+    </div>
+    <textarea class="inputBox" style="display:none;       ">
       {
           "product_id": 46539040,
           "freeSeating": false,
@@ -2393,59 +2530,73 @@ if ($conn->connect_error) {
       }
     </textarea>
 
-<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+  
+
+    </script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+
 <script src="js/seatLayout.js"></script>
-<script>
-var seat_data = ''; 
-const seats_array = [];    
+    <script>
 
-function loadGrid() {
-    var seatData = $('.inputBox').val();
-    var numberOfSeat = "<?php echo $_GET['seats']; ?>";
-    console.log('Number of seats:', numberOfSeat);
+        var seat_data = ''; 
+        const seats_array = [];    
 
-    try {
-        seatData = JSON.parse(seatData);
-    } catch (e) {
-        console.error('Invalid JSON data:', seatData);
-        return;
-    }
+        function loadGrid() {
+            var seatData = $('.inputBox').val();
+            
+            var nuberOfSeat = "<?php echo $_GET["seats"]; ?>";
 
-    console.log('Parsed seat data:', seatData);
+            seatData = JSON.parse($('.inputBox').val());
 
-    $('#book-seats').seatLayout({
-        data: seatData,
-        showActionButtons: true,
-        classes: { doneBtn: '', cancelBtn: '', row: '', area: '', screen: '', seat: '' },
-        numberOfSeat: parseInt(numberOfSeat),
-        callOnSeatRender: function (Obj) {
-            return Obj;
-        },
-        callOnSeatSelect: function (_event, _data, _selected, _element) {
-            seats_array.length = 0;
-            _data["selected"].forEach((element) => {
-                seats_array.push(element.PhyRowId + "_" + element.seatNumber);
+            $('#book-seats').seatLayout({
+                data: seatData,
+                showActionButtons:true,
+                classes : {
+                    doneBtn : '',
+                    cancelBtn : '',
+                    row:'',
+                    area:'',
+                    screen:'',
+                    seat:''
+                },
+                numberOfSeat: parseInt(nuberOfSeat),
+                callOnSeatRender: function (Obj) {
+                    return Obj;
+                },
+                callOnSeatSelect: function (_event, _data, _selected, _element) {
+                    //console.log(_event);
+                    //console.log(_data["selected"]);
+                    //console.log(_selected);
+
+                   
+
+                    _data["selected"].forEach((element, index, array) => {
+                       
+                        seats_array.push(element.PhyRowId+"_"+element.seatNumber); 
+
+                    });
+
+                    var booked_seats = seats_array.join(",");
+                    console.log(booked_seats); 
+                },
+                selectionDone: function (_array) 
+                {
+                    pay_now();
+                },
+                cancel: function () {
+                    history.back();
+                }
             });
-
-            var booked_seats = seats_array.join(",");
-            console.log('Booked seats:', booked_seats); 
-        },
-        selectionDone: function (_array) {
-            pay_now();
-        },
-        cancel: function () {
-            history.back();
         }
-    });
-}
 
-loadGrid();
-</script>
+        loadGrid();
 
-<script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script type="text/javascript">
- function pay_now()
+        </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script type="text/javascript">
+         function pay_now()
         {
             var name          = ""; // Add Name
             var amount        = "<?php echo $_GET['amount']; ?>"; // Get total amount
@@ -2472,15 +2623,10 @@ loadGrid();
                             'total': amount,
                             'movie': "<?php echo $_GET["movie"]; ?>",
                             'seats': seat_details,
-                            // new data
-                            'theatre': "<?php echo $_GET["theatre"]; ?>",
-                            'screen': "<?php echo $_GET["screen"]; ?>",
-                            'bookingdate': "<?php echo $_GET["bookingdate"]; ?>",
-                            'showtime': "<?php echo $_GET["showtime"]; ?>",
                         },
                         success:function(data){
                             console.log(data);
-                            window.location.href = 'orders.php'; 
+                            window.location.href = 'profile.php'; 
                         }
 
                     });

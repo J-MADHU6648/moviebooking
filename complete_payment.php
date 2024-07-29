@@ -36,6 +36,6 @@ if($otp == "123456") {
     </table>
     <h2>
     <script>
-        setTimeout(function(){ window.location="profile.php"; }, 3000);
+        setTimeout(function(){ window.location="orders.php"; }, 3000);
     </script>
 </body>

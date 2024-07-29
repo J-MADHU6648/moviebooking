@@ -1,11 +1,6 @@
-/*!
-* Seat Layout Library v0.01
-* Copyright (c) 2017 Sachin Kurkute
-* MIT License : https://github.com/SachinKurkute/movie-seat-layout/blob/master/LICENSE
-*/
 (function ($) {
     function Movieseat(_paramObject) {
-        var maxSeat, minSeat, pluginOptions = $.extend({},_paramObject.options);
+        var maxSeat, minSeat, pluginOptions = $.extend({}, _paramObject.options);
         var getMainLayoutFunc = function (_obj) {
             maxSeat = _obj.intMaxSeatId;
             minSeat = _obj.intMinSeatId;
@@ -13,12 +8,12 @@
             for (var i = 0; i < _obj.objArea.length; i++) {
                 _html += getAreaLayoutFunc(_obj.objArea[i]);
             }
-            var actionPanel = pluginOptions.showActionButtons?"<div class='seat-proccess-panel'> <button  type='button' class='layout-action-btn layout-btn-cancel  "+ pluginOptions.classes.cancelBtn +"'> Cancel </button> <button type='button' class='layout-action-btn layout-btn-done "+ pluginOptions.classes.doneBtn +"'> Pay Now </button> </div>":"";
-            _html += "<div class='movie-screen "+ pluginOptions.classes.screen +"'>-- Screen --</div>"+ actionPanel +"</div>";
+            var actionPanel = pluginOptions.showActionButtons ? "<div class='seat-proccess-panel'> <button  type='button' class='layout-action-btn layout-btn-cancel  " + pluginOptions.classes.cancelBtn + "'> Cancel </button> <button type='button' class='layout-action-btn layout-btn-done " + pluginOptions.classes.doneBtn + "'> Pay Now </button> </div>" : "";
+            _html += "<div class='movie-screen " + pluginOptions.classes.screen + "'>-- Screen --</div>" + actionPanel + "</div>";
             return _html;
         }
         var getAreaLayoutFunc = function (_obj) {
-            var _html = "<div class='seat-area "+ pluginOptions.classes.area +"'>";
+            var _html = "<div class='seat-area " + pluginOptions.classes.area + "'>";
             _html += "<div class='seat-area-desc'>" + _obj.AreaDesc + "</div>";
             for (var i = 0; i < _obj.objRow.length; i++) {
                 _html += getRowLayoutFunc(_obj.objRow[i], _obj);
@@ -27,7 +22,7 @@
             return _html;
         }
         var getRowLayoutFunc = function (_obj, _area) {
-            var _html = "<ul class='seat-area-row "+ pluginOptions.classes.row +"'> <li class='seat-row-seat row-indicator'>" + _obj.PhyRowId + "</li>";
+            var _html = "<ul class='seat-area-row " + pluginOptions.classes.row + "'> <li class='seat-row-seat row-indicator'>" + _obj.PhyRowId + "</li>";
             var totalSpace = 0;
             for (var i = 0; i < _obj.objSeat.length; i++) {
                 if (i == 0) {
@@ -56,26 +51,40 @@
             _html += "</ul>";
             return _html;
         }
-        getSeatLayoutFunc = function (_obj, isSeat, _row, _area) {
+
+        var getSeatLayoutFunc = function (_obj, isSeat, _row, _area) {
             _obj.GridRowId = _row.GridRowId;
             _obj.PhyRowId = _row.PhyRowId;
             _obj.AreaNum = _area.AreaNum;
             _obj.AreaCode = _area.AreaCode;
             _obj.AreaDesc = _area.AreaDesc;
             _obj = _paramObject.callSeatRender(_obj);
+
             if (_obj) {
                 var dataString = JSON.stringify(_obj);
                 var classes = pluginOptions.classes.seat;
+
                 if (isSeat) {
-                    if (_obj && _obj.SeatStatus == "0") {
+                    if (_obj.SeatStatus === "0") {
                         classes += " can-select";
                     }
-                    return "<li data-seatdefination='" + dataString + "' class='seat-row-seat seat-yes " + classes + " '><span></span></li>";
+
+                    // Extract seat number from data-seatdefination
+                    var seatNumber = _obj.seatNumber;
+                    var seatId = _obj.PhyRowId + "_" + seatNumber;
+
+                    // Check if the seatId exists in bookedSeats array
+                    if ($.inArray(seatId, bookedSeats) !== -1) {
+                        classes += " disabled-seat";
+                    }
+
+                    return "<li data-seatdefination='" + dataString + "' class='seat-row-seat seat-yes " + classes + "'><span></span></li>";
                 } else {
                     return "<li class='seat-row-seat " + classes + "'></li>";
                 }
             }
         }
+
         return {
             getAreaLayout: getAreaLayoutFunc,
             getRowLayout: getRowLayoutFunc,
@@ -84,19 +93,19 @@
         }
     }
     $.fn.seatLayout = function (_options) {
-        var _optionsObj = $.extend(true,{},{
-            type:'movie',
-            showActionButtons:true,
-            classes : {
-                doneBtn : '',
-                cancelBtn : '',
-                seat:'',
-                row:'',
-                area:'',
-                screen:''
+        var _optionsObj = $.extend(true, {}, {
+            type: 'movie',
+            showActionButtons: true,
+            classes: {
+                doneBtn: '',
+                cancelBtn: '',
+                seat: '',
+                row: '',
+                area: '',
+                screen: ''
             },
-            numberOfSeat:1
-        },_options);
+            numberOfSeat: 1
+        }, _options);
         var selectedSeats = [];
         var nuberOfSeat = _optionsObj.numberOfSeat;
         var tempSelected = 0;
@@ -109,7 +118,7 @@
                 }
                 return _seatObj;
             },
-            options : _optionsObj
+            options: _optionsObj
         });
         _html = seatInstance.getMainLayout(_optionsObj.data.seatLayout.colAreas);
         _el.html(_html);
@@ -117,17 +126,19 @@
             return _ele.data('seatdefination');
         }
         _el.find('li').click(function (e) {
-            if ($(this).hasClass('can-select')) {
-                var seatData = getObjData($(this))
+            if ($(this).hasClass('can-select') && !$(this).hasClass('disabled-seat')) {
+                var seatData = getObjData($(this));
                 var nextAll = $(this).nextAll().andSelf();
+                
                 if (selectedSeats.length == nuberOfSeat) {
                     tempSelected = 0;
                     selectedSeats = [];
                     _el.find('li.current-selected').removeClass('current-selected');
                 }
+                
                 var count = tempSelected;
                 for (var i = 0; i < nuberOfSeat - tempSelected; i++) {
-                    if (nextAll[i] && $(nextAll[i]).hasClass('can-select') && !$(nextAll[i]).hasClass('current-selected')) {
+                    if (nextAll[i] && $(nextAll[i]).hasClass('can-select') && !$(nextAll[i]).hasClass('current-selected') && !$(nextAll[i]).hasClass('disabled-seat')) {
                         selectedSeats.push(getObjData($(nextAll[i])));
                         $(nextAll[i]).addClass('current-selected');
                         count++;
@@ -135,13 +146,16 @@
                         break;
                     }
                 }
+                
                 tempSelected = count;
                 _el.find('.layout-btn-done').prop('disabled', !(nuberOfSeat == selectedSeats.length));
+                
                 var dataToPass = $.extend({}, getObjData($(this)));
                 dataToPass.selected = selectedSeats;
                 _optionsObj.callOnSeatSelect(e, dataToPass, this);
             }
         });
+        
 
         _el.find('.layout-btn-done').prop('disabled', true);
         _el.find('.layout-btn-done').click(function (e) {

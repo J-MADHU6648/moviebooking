@@ -32,6 +32,7 @@ date_default_timezone_set('Asia/Kathmandu');
 			  		   <li><a href="movies_events.php"style="color: #000;">Movies</a></li>
 						 <li><a href="contact.php" style="color: #000;">Contact</a></li>
 						 <li><a href="orders.php" style="color: #000;">Orders</a></li>
+						 <li><a href="admin/index.php" style="color: #000;">Admin</a></li>
 						 <!-- <li><a href="profile.php" style="color: #000;">Profile</a></li> -->
 					   <!-- <li><a href="about.html" style="color: #000;">About</a></li> -->
 			  		   <li><?php if(isset($_SESSION['user'])){
