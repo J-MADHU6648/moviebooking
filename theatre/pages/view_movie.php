@@ -27,11 +27,12 @@ include('header.php');
             <div class="box-body">
               <?php include('../../msgbox.php');?>
               <ul class="todo-list">
-                 <?php 
-                        $qry7=mysqli_query($con,"select * from tbl_movie");
+              <?php 
+                        $theatre_id = $_SESSION['theatre']; // assuming theatre_id is stored in session
+                        $qry7 = mysqli_query($con, "SELECT * FROM tbl_movie WHERE t_id = '$theatre_id'");
                         if(mysqli_num_rows($qry7))
                         {
-                        while($c=mysqli_fetch_array($qry7))
+                        while($c = mysqli_fetch_array($qry7))
                         {
                         ?>
                 <li>
